@@ -10,13 +10,9 @@ exports.up = function(knex) {
         account.string('password', 255)
             .notNullable();
     })
-    .createTable('saved_music', list => {
-        list.increments();
-        list.
-    })
 };
 
 exports.down = function(knex) {
     knex.schema
-  
+        .dropTableIfExists('accounts');
 };

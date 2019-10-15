@@ -3,9 +3,83 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const secrets = require('../../auth/secrets');
 
-const accountDB = require('./accountsModel.js');
+const db = require('./accountsModel.js');
 // const authenticate = require('../auth/middleware.js'); NEED NAMED EXPORT/IMPORT
 
-//router endpoints here
+// router endpoints here
 
-module.exports = router;
+// ---------- POST - register account
+/**
+ * @api {get} /accounts/register Register account
+ * @apiVersion 0.1.0
+ * @apiName Register
+ * @apiGroup Accounts
+ * 
+ * @apiParam {String} name User's name or preferred display name
+ * @apiParam {String} email User's email
+ * @apiParam {String} password User's password
+ * 
+ * @apiSuccess {Number} id Account id
+ * @apiSuccess {String} name User's name
+ * @apiSuccess {String} email User's email
+ * @apiSuccess {String} token Login token generated for the user
+*/
+router.post('/register', (req, res) => {
+    let account = req.body;
+      account.password = bcrypt.hashSync(account.password, 8);
+  
+      db.createAccount(account)
+          .then(user => {
+            const token = generateToken(user)
+            res.status(201).json({id: user.id, name: user.name, email: user.email, token: token})
+          })
+          .catch(err => {
+            console.log(err)
+            res.status(500).json({error: "Error creating account."})
+          })
+  });
+
+// ---------- POST - log in to account  
+/**
+ * @api {get} /accounts/register Log in to account
+ * @apiVersion 0.1.0
+ * @apiName Login
+ * @apiGroup Accounts
+ * 
+ * @apiParam {String} email User's email
+ * @apiParam {String} password User's password
+ * 
+ * @apiSuccess {String} welcome Welcome message that includes the user's name
+ * @apiSuccess {String} token Login token generated for the user
+*/
+  router.post('/login', (req, res) => {
+    const { email, password } = req.body;
+  
+      db.findByEmail({email})
+      .then(user => {
+          if (user && bcrypt.compareSync(password, user.password)) {
+              const token = generateToken(user)
+              res.status(200).json({ message: `Welcome ${user.name}!`, token: token });
+          } else {
+              res.status(401).json({ message: 'Unable to log in to account.' });
+          }
+        })
+        .catch(error => {
+          res.status(500).json(error);
+        });
+  });
+  
+  
+
+  function generateToken(user) {
+    const payload = {
+        username: user.email,
+    };
+    const options = {
+        expiresIn: '1d',
+    };
+    return jwt.sign(payload, secrets.jwtSecret, options);
+  }
+  
+  module.exports = router;
+  
