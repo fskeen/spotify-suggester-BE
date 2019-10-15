@@ -23,6 +23,15 @@ const db = require('./accountsModel.js');
  * @apiSuccess {String} name User's name
  * @apiSuccess {String} email User's email
  * @apiSuccess {String} token Login token generated for the user
+ * 
+ * @apiSuccessExample Successful response: 
+ *  HTTP/1.1 201 OK
+ * {
+  "id": 8,
+  "name": "Janet",
+  "email": "cactus@wikipedia.org",
+  "token": "a really long string of letters and numbers, separated by dots"
+}
 */
 router.post('/register', (req, res) => {
     let account = req.body;
@@ -41,7 +50,7 @@ router.post('/register', (req, res) => {
 
 // ---------- POST - log in to account  
 /**
- * @api {get} /accounts/register Log in to account
+ * @api {get} /accounts/login Log in to account
  * @apiVersion 0.1.0
  * @apiName Login
  * @apiGroup Accounts
@@ -51,6 +60,11 @@ router.post('/register', (req, res) => {
  * 
  * @apiSuccess {String} welcome Welcome message that includes the user's name
  * @apiSuccess {String} token Login token generated for the user
+ *  @apiSuccessExample Successful response: 
+ *  HTTP/1.1 200 OK
+ * {
+  "message": "Welcome, Tahani!"
+  "token": "a really long string of letters and numbers, separated by dots"
 */
   router.post('/login', (req, res) => {
     const { email, password } = req.body;
@@ -69,7 +83,7 @@ router.post('/register', (req, res) => {
         });
   });
   
-  
+
 
   function generateToken(user) {
     const payload = {
